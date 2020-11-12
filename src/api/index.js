@@ -1,9 +1,8 @@
 const Router = require("koa-router");
 const api = new Router();
 
-const postCtrl = require("./api.ctrl");
+const posts = require("./posts");
 
-api.get("/post", postCtrl.list);
-api.post("/post", postCtrl.write);
+api.use("/posts", posts.routes());
 
 module.exports = api;
