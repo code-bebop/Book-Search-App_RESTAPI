@@ -33,8 +33,23 @@ exports.read = async (ctx) => {
   console.log(`id : ${ctx.params.id}`);
   const { id } = ctx.params;
   try {
-    const post = await Post.find({ _id: id }).lean().exec();
-    ctx.body = post;
+    const post = await Post.findById(id).lean().exec();
+    const prevPostId = await Post.find({ _id: { $lt: id } }, { _id: true })
+      .sort({ _id: -1 })
+      .limit(1)
+      .lean()
+      .exec();
+    const nextPostId = await Post.find({ _id: { $gt: id } }, { _id: true })
+      .sort({ _id: 1 })
+      .limit(1)
+      .lean()
+      .exec();
+
+    ctx.body = {
+      post,
+      prevPostId,
+      nextPostId,
+    };
   } catch (e) {
     ctx.throw(500, e);
   }
