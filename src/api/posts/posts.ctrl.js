@@ -1,10 +1,20 @@
 const { Post } = require("../../models/post");
 
 exports.list = async (ctx) => {
+  const { page } = ctx.query;
   try {
     console.log("GET REQUEST to /posts detected");
-    const posts = await Post.find().sort({ _id: -1 }).lean().exec();
-    ctx.body = posts;
+    const posts = await Post.find()
+      .sort({ _id: -1 })
+      .skip((page - 1) * 10)
+      .limit(10)
+      .lean()
+      .exec();
+    const postCount = await Post.find().count({}).lean().exec();
+    ctx.body = {
+      posts,
+      postCount,
+    };
   } catch (e) {
     ctx.throw(500, e);
   }
@@ -34,12 +44,18 @@ exports.read = async (ctx) => {
   const { id } = ctx.params;
   try {
     const post = await Post.findById(id).lean().exec();
-    const prevPostId = await Post.find({ _id: { $lt: id } }, { _id: true })
+    const prevPost = await Post.find(
+      { _id: { $lt: id } },
+      { _id: true, title: true }
+    )
       .sort({ _id: -1 })
       .limit(1)
       .lean()
       .exec();
-    const nextPostId = await Post.find({ _id: { $gt: id } }, { _id: true })
+    const nextPost = await Post.find(
+      { _id: { $gt: id } },
+      { _id: true, title: true }
+    )
       .sort({ _id: 1 })
       .limit(1)
       .lean()
@@ -47,8 +63,8 @@ exports.read = async (ctx) => {
 
     ctx.body = {
       post,
-      prevPostId,
-      nextPostId,
+      prevPost,
+      nextPost,
     };
   } catch (e) {
     ctx.throw(500, e);
