@@ -23,10 +23,11 @@ exports.list = async (ctx) => {
 exports.write = async (ctx) => {
   console.log("POST REQUEST to /posts detected");
   console.log(ctx.request.body);
-  const { title, body } = ctx.request.body;
+  const { title, body, bookInfo } = ctx.request.body;
   const post = new Post({
     title,
     body,
+    bookInfo,
   });
   try {
     await post.save().then((savedPost) => {
